@@ -1,0 +1,97 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      # - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      # - "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=demonotes@mail.ddcleave.ru"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+    volumes:
+      - "traefik-public-certificates:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  client:
+    build: ./frontend/note-app
+    container_name: note-client
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.client.rule=Host(`ddcleave.ru`)"
+      - "traefik.http.routers.client.entrypoints=websecure"
+      - "traefik.http.routers.client.tls.certresolver=myresolver"
+
+  note-server:
+    build:  ./note_server
+    container_name: note-server
+    depends_on:
+      - postgres-note
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.note-server.rule=Host(`ddcleave.ru`) && PathPrefix(`/note`)"
+      - "traefik.http.routers.note-server.entrypoints=websecure"
+      - "traefik.http.routers.note-server.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.test-mw.replacepathregex.regex=^/note/(.*)"
+      - "traefik.http.middlewares.test-mw.replacepathregex.replacement=/$$1"
+      - "traefik.http.routers.note-server.middlewares=test-mw@docker"
+
+  auth-server:
+    build: ./auth_server
+    container_name: auth-server
+    links: 
+      - "redis:redis"
+      - "postgres:postgres"
+    environment:
+        MODULE_NAME: 'auth_server.main'
+        GUNICORN_CMD_ARGS: 
+    command: ["/start-reload.sh"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-server.rule=Host(`ddcleave.ru`) && PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.auth-server.entrypoints=websecure"
+      - "traefik.http.routers.auth-server.tls.certresolver=myresolver"
+      - "traefik.http.middlewares.replacepathregex-mw.replacepathregex.regex=^/api/v1/(.*)"
+      - "traefik.http.middlewares.replacepathregex-mw.replacepathregex.replacement=/$$1"
+      - "traefik.http.routers.auth-server.middlewares=replacepathregex-mw@docker"
+
+  postgres:
+    image: postgres
+    ports: 
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_AUTH_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+
+  postgres-note:
+    image: postgres
+    expose:
+      - 5433
+    ports:
+      - 5433:5433
+    environment:
+      POSTGRES_USER: ${POSTGRES_NOTE_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_NOTE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NOTE_DB}
+    command: -p 5433
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  traefik-public-certificates:
+  redis-data:

@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "auth_server"
+version = "0.1.0"
+description = ""
+authors = ["ddcleave <ddcleave@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.61.2"
+python-jose = {extras = ["cryptography"], version = "^3.2.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+databases = {extras = ["postgresql"], version = "^0.4.1"}
+redis = "^3.5.3"
+aiosmtplib = "^1.1.4"
+fastapi-mail = {git = "https://github.com/ddcleave/fastapi-mail.git"}
+email-validator = "^1.1.2"
+pydantic = {extras = ["dotenv"], version = "^1.7.2"}
+alembic = "^1.4.3"
+psycopg2 = "^2.8.6"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+requests = "^2.25.0"
+beautifulsoup4 = "^4.9.3"
+lxml = "^4.6.1"
+pytest-asyncio = "^0.14.0"
+SQLAlchemy-Utils = "^0.36.8"
+yarl = "^1.6.3"
+pytest-mock = "^3.3.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

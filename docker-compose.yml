@@ -1,0 +1,106 @@
+# for local development
+version: "3.8"
+services:
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  auth-server:
+    build:  ./auth_server
+    container_name: auth-server
+    environment:
+        MODULE_NAME: 'auth_server.main'
+        DOMAIN: "localtest.me"
+        MAIL_SERVER: "maildev"
+        MAIL_TLS: "False"
+        MAIL_SSL: "False"
+        MAIL_FROM: your@email.com
+        MAIL_PORT: 1025
+        HTTPS: "False"
+        MAIL_USERNAME: ""
+        MAIL_PASSWORD: ""
+        GUNICORN_CMD_ARGS: 
+    command: ["/start-reload.sh"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.replacepathregex-mw.replacepathregex.regex=^/api/v1/(.*)"
+      - "traefik.http.middlewares.replacepathregex-mw.replacepathregex.replacement=/$$1"
+      - "traefik.http.routers.auth-server.rule=PathPrefix(`/api/v1`)"
+      - "traefik.http.routers.auth-server.entrypoints=web"
+      - "traefik.http.routers.auth-server.middlewares=replacepathregex-mw@docker"
+        
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    
+
+  postgres:
+    image: postgres
+    ports: 
+      - 5432:5432
+    environment:
+      POSTGRES_USER: ${POSTGRES_AUTH_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_AUTH_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+  
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+    command : ["bin/maildev", "-w", "1080", "-s", "1025"]
+  
+  note-server:
+    build:  ./note_server
+    container_name: note-server
+    depends_on:
+      - postgres-note
+    environment: 
+      DOMAIN: "localtest.me"
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.note-server.rule=PathPrefix(`/note`)"
+      - "traefik.http.routers.note-server.entrypoints=web"
+      - "traefik.http.middlewares.test-mw.replacepathregex.regex=^/note/(.*)"
+      - "traefik.http.middlewares.test-mw.replacepathregex.replacement=/$$1"
+      - "traefik.http.routers.note-server.middlewares=test-mw@docker"
+
+  postgres-note:
+    image: postgres
+    expose:
+      - 5433
+    ports:
+      - 5433:5433
+    environment:
+      POSTGRES_USER: ${POSTGRES_NOTE_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_NOTE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NOTE_DB}
+    command: -p 5433
+
+
+  client:
+    build: ./frontend/note-app
+    container_name: note-client
+    labels: 
+      - "traefik.enable=true"
+      - "traefik.http.routers.client.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.client.entrypoints=web"
+
+volumes:
+  redis-data:

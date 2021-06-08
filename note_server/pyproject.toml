@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "note_server"
+version = "0.1.0"
+description = ""
+authors = ["ddcleave <ddcleave@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.63.0"
+uvicorn = {extras = ["standard"], version = "^0.13.3"}
+python-jose = {extras = ["cryptography"], version = "^3.2.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+SQLAlchemy = "^1.4.3"
+alembic = "^1.5.8"
+psycopg2-binary = "^2.8.6"
+python-multipart = "^0.0.5"
+
+[tool.poetry.dev-dependencies]
+SQLAlchemy-Utils = "^0.37.0"
+pytest = "^6.2.3"
+pep8 = "^1.7.1"
+autopep8 = "^1.5.6"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
