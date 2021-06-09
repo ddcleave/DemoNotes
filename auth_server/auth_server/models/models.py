@@ -52,9 +52,9 @@ class UniqueUsernameAndEmail(BaseModel):
     @validator("username")
     def username_validation(cls, v: str):
         if v.exist_username:
-            raise ValueError('username already exists')
+            raise ValueError('Username already exists')
         if exist_username(v.username) != 0:
-            raise ValueError('username already exists')
+            raise ValueError('Username already exists')
         return v
 
     @validator("email")
@@ -62,5 +62,5 @@ class UniqueUsernameAndEmail(BaseModel):
         if v.exist_email:
             raise ValueError('email already exists')
         if exist_email(v.email) != 0:
-            raise ValueError('email already exists')
+            raise ValueError('Email already exists')
         return v

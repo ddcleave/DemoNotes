@@ -60,7 +60,12 @@ export default function MaterialRegister(props) {
     onSubmit: (async (values) => {
       const response = await signupAPI(values)
       if (response.ok) {
-        history.push("/");
+      if (response.status === 422) {
+        const error_messages = await response.json()
+        const err = error_messages.detail.reduce(
+          (acc, item)=>(acc[item.loc[0]]=item.msg, acc), {}
+        )
+        formik.setErrors(err)
       }
     })
   });
