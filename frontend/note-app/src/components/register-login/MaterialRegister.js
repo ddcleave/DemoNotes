@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as yup from 'yup';
 import { useHistory } from 'react-router-dom'
 import useStyles from '../../style';
@@ -9,35 +9,35 @@ import TextField from '@material-ui/core/TextField';
 import signupAPI from '../utils/API/signup';
 
 const validationSchema = yup.object({
-    username: yup
-      .string()
-      .min(3, 'Username should be of minimum 3 characters length')
-      .max(50, 'Username should be of maximum 50 characters length')
-      .required('Required'),
-    password: yup
-      .string()
-      .min(8, 'Password should be of minimum 8 characters length')
-      .max(50, 'Password should be of maximum 50 characters length')
-      .required('Password is required'),
-    password_again: yup
-      .string()
-      .required('Re-enter password'),
-    email: yup
-      .string()
-      .email('Enter a valid email')
-      .required('Email is required'),
-    fullname: yup
-      .string()
-      .required('Fullname is required')
-      .min(3, 'Fullname should be of minimum 3 characters length')
-      .max(50, 'Fullname should be of maximum 50 characters length')
+  username: yup
+    .string()
+    .min(3, 'Username should be of minimum 3 characters length')
+    .max(50, 'Username should be of maximum 50 characters length')
+    .required('Required'),
+  password: yup
+    .string()
+    .min(8, 'Password should be of minimum 8 characters length')
+    .max(50, 'Password should be of maximum 50 characters length')
+    .required('Password is required'),
+  password_again: yup
+    .string()
+    .required('Re-enter password'),
+  email: yup
+    .string()
+    .email('Enter a valid email')
+    .required('Email is required'),
+  fullname: yup
+    .string()
+    .required('Fullname is required')
+    .min(3, 'Fullname should be of minimum 3 characters length')
+    .max(50, 'Fullname should be of maximum 50 characters length')
 });
 
 export default function MaterialRegister(props) {
   const { open, handleClose } = props
   const classes = useStyles()
-  
-  let history = useHistory();
+  const [verify, setVerify] = useState(false)
+
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -49,17 +49,19 @@ export default function MaterialRegister(props) {
     validate: (values => {
       const errors = {};
       if (values.password !== values.password_again) {
-          errors.password_again = 'Passwords don\'t match';
+        errors.password_again = 'Passwords don\'t match';
       } else if (
-          !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
+        !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)
       ) {
-          errors.email = 'Invalid email address';
+        errors.email = 'Invalid email address';
       }
       return errors;
     }),
     onSubmit: (async (values) => {
       const response = await signupAPI(values)
       if (response.ok) {
+        setVerify(true)
+      }
       if (response.status === 422) {
         const error_messages = await response.json()
         const err = error_messages.detail.reduce(
@@ -70,12 +72,20 @@ export default function MaterialRegister(props) {
     })
   });
 
+  const handleReset = () => {
+    if (verify === true) {
+      formik.resetForm()
+      setVerify(false)
+    }
+  }
+
   return (
     <div>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle className={classes.loginTitle}>Registration</DialogTitle>
+      <Dialog open={open} onClose={handleClose} onExited={handleReset}>
+        <DialogTitle className={classes.loginTitle}>Sign up</DialogTitle>
+
         <DialogContent>
-          <DialogContentText>
+          {!verify && <DialogContentText>
             <form onSubmit={formik.handleSubmit}>
               <TextField
                 fullWidth
@@ -135,7 +145,13 @@ export default function MaterialRegister(props) {
                 Sign up
               </Button>
             </form>
-          </DialogContentText>
+          </DialogContentText>}
+          {
+            verify && <DialogContentText>
+              We have send an email to {formik.values.email},
+              please click on the link in that email to complete sign up.
+            </DialogContentText>
+          }
         </DialogContent>
       </Dialog>
     </div>
