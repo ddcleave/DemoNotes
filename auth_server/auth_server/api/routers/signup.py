@@ -1,3 +1,4 @@
+from auth_server.utils.create_url import create_url_for_email
 from datetime import timedelta
 
 from auth_server.api.dependencies.forms import RegistrationForm
@@ -6,7 +7,6 @@ from auth_server.api.dependencies.queries_to_db import (exist_email_in_db,
 from auth_server.api.dependencies.queries_to_redis import (
     save_user_to_redis, set_username_and_email)
 from auth_server.core.config import Settings, get_settings
-from auth_server.email_templates.template import simple_template_for_email
 from auth_server.models import ResponseAuth
 from auth_server.models.models import (EmailAndExist, UniqueUsernameAndEmail,
                                        UsernameAndExist)
@@ -65,16 +65,12 @@ async def sign_up_with_email(
         algorithm=settings.algorithm,
         expires_delta=token_expires
     )
-    if settings.https == True:
-        protocol = "https://"
-    else:
-        protocol = "http://"
 
     message = MessageSchema(
         subject="Verification",
         recipients=[form_data.email],
-        # body=simple_template_for_email(token),
-        body={"confirm_url": protocol + settings.domain + "/verify?token=" + token},
+        body={"confirm_url": create_url_for_email(
+            settings.https, settings.domain, "/verify", {"token": token})},
         subtype="html"
     )
     background_tasks.add_task(mail_server.send_message, message,
