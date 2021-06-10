@@ -37,7 +37,6 @@ def test_signup(migrated_postgres_connection, redisdb, url, maildev):
                          ":1080/email")
             result = res.json()
             soup = BeautifulSoup(result[0]['html'], features="lxml")
-            # token = soup.html.body.p.br.next_sibling
             token = soup.html.body.find('a').text.split('token=', 1)[1]
             settings = get_settings()
             try:
@@ -281,12 +280,12 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     },
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -319,7 +318,7 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -352,7 +351,7 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -385,12 +384,12 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     },
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -423,12 +422,12 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     },
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -461,7 +460,7 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -494,7 +493,7 @@ nonconfirmed_user_data_cases = {
                 "detail": [
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -575,7 +574,6 @@ def test_nonconfirmed_user_data(migrated_postgres_connection,
         assert response.json() == resp_2["json"]
 
 
-
 already_existed_in_db_cases = {
     "identical_user_data": (
         {
@@ -590,12 +588,12 @@ already_existed_in_db_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     },
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -615,7 +613,7 @@ already_existed_in_db_cases = {
                 "detail": [
                     {
                         'loc': ['username'],
-                        'msg': 'username already exists',
+                        'msg': 'Username already exists',
                         'type': 'value_error'
                     }
                 ]
@@ -635,7 +633,7 @@ already_existed_in_db_cases = {
                 "detail": [
                     {
                         'loc': ['email'],
-                        'msg': 'email already exists',
+                        'msg': 'Email already exists',
                         'type': 'value_error'
                     }
                 ]

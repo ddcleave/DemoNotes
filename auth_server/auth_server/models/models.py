@@ -61,7 +61,7 @@ class UniqueUsernameAndEmail(BaseModel):
     @validator("email")
     def email_validation(cls, v: str):
         if v.exist_email:
-            raise ValueError('email already exists')
+            raise ValueError('Email already exists')
         if exist_email(v.email) != 0:
             raise ValueError('Email already exists')
         return v
