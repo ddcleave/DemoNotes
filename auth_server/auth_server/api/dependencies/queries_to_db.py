@@ -1,3 +1,4 @@
+from auth_server.models.models import User
 from auth_server.db.schema import users_table
 from sqlalchemy.sql import or_
 from auth_server.db.database import database
@@ -46,3 +47,11 @@ async def create_new_user(username: str, full_name: str,
 
 async def replace_password(username: str, hash_password: str):
     await database.execute(update_password(username, hash_password))
+
+
+async def get_userdata_from_email(email: str):
+    query = users_table.select().where(
+        users_table.c.email == email
+    )
+    result = await database.fetch_one(query)
+    return User(**result)
