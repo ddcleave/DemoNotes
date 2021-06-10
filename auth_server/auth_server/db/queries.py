@@ -14,9 +14,9 @@ from .schema import users_table
 #     )
 
 
-def get_user_from_db(username: str):
+def get_user_from_db(email: str):
     return users_table.select().where(
-        users_table.c.username == username
+        users_table.c.email == email
     )
 
 

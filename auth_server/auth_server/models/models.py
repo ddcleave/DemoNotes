@@ -1,3 +1,4 @@
+from pydantic.networks import EmailStr
 from auth_server.api.dependencies.queries_to_redis import exist_email, exist_username
 from datetime import datetime
 from typing import Optional
@@ -64,3 +65,7 @@ class UniqueUsernameAndEmail(BaseModel):
         if exist_email(v.email) != 0:
             raise ValueError('Email already exists')
         return v
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
