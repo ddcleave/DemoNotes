@@ -34,7 +34,7 @@ def test_correct_token(migrated_postgres_connection, redisdb, url, maildev):
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 200
         assert response.json() == {"username": "qwerty"}
 
@@ -71,7 +71,7 @@ def test_incorrect_username(migrated_postgres_connection, redisdb, url):
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 401
         assert response.json() == {"detail": "Could not validate credentials"}
 
@@ -82,7 +82,7 @@ def test_incorrect_token(migrated_postgres_connection, redisdb, url):
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 401
         assert response.json() == {"detail": "Could not validate credentials"}
 
@@ -113,7 +113,7 @@ def test_expired_token(migrated_postgres_connection, redisdb, url):
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 401
         assert response.json() == {"detail": "Could not validate credentials"}
 
@@ -133,7 +133,7 @@ def test_correct_token_no_data_in_db(migrated_postgres_connection,
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 401
         assert response.json() == {"detail": "Could not validate credentials"}
 
@@ -164,11 +164,11 @@ def test_repeated_request(migrated_postgres_connection, redisdb, url, maildev):
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 200
         assert response.json() == {"username": "qwerty"}
 
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 401
         assert response.json() == {"detail": "Could not validate credentials"}
 
@@ -199,6 +199,6 @@ def test_incorrect_scope(migrated_postgres_connection, redisdb, url, maildev):
         payload = {
             "token": token
         }
-        response = client.post("/verify", data=payload)
+        response = client.post("/verify", json=payload)
         assert response.status_code == 401
         assert response.json() == {"detail": "Could not validate credentials"}
