@@ -1,13 +1,16 @@
 import pytest
-from auth_server.db.queries import insert_new_user
 from auth_server.main import app
-from auth_server.services.password import get_password_hash
 from fastapi.testclient import TestClient
 
 
-def test_user_exists_in_db(migrated_postgres_connection, url):
-    migrated_postgres_connection.execute(insert_new_user(
-        "qwerty", "qwe", "qwe@qwe.com", get_password_hash("supersecret")))
+def test_user_exists_in_db(url, create_account):
+    userdata = {
+        "username": "qwerty",
+        "full_name": "qwe",
+        "email": "qwe@qwe.com",
+        "password": "supersecret"
+    }
+    create_account(userdata)
 
     with TestClient(app, base_url=url) as client:
         payload = {
@@ -16,9 +19,9 @@ def test_user_exists_in_db(migrated_postgres_connection, url):
             "fingerprint": "4650b687b0c11f970b642f18316ccfe8"
         }
         response = client.post("/token", data=payload)
-        assert response.status_code == 200
-        assert response.json() == {"operation": "login",
-                                   "successful": True}
+    assert response.status_code == 200
+    assert response.json() == {"operation": "login",
+                               "successful": True}
 
 
 def test_user_not_exists_in_db(migrated_postgres_connection, url):
@@ -228,14 +231,18 @@ test_cases = {
 }
 
 
-
 @pytest.mark.parametrize("user_data,resp", test_cases.values(),
                          ids=list(test_cases.keys()))
-def test_validation(migrated_postgres_connection, url, user_data, resp):
-    migrated_postgres_connection.execute(insert_new_user(
-        "qwerty", "qwe", "qwe@qwe.com", get_password_hash("supersecret")))
+def test_validation(url, user_data, resp, create_account):
+    userdata = {
+        "username": "qwerty",
+        "full_name": "qwe",
+        "email": "qwe@qwe.com",
+        "password": "supersecret"
+    }
+    create_account(userdata)
 
     with TestClient(app, base_url=url) as client:
         response = client.post("/token", data=user_data)
-        assert response.status_code == resp["status"]
-        assert response.json() == resp["json"]
+    assert response.status_code == resp["status"]
+    assert response.json() == resp["json"]

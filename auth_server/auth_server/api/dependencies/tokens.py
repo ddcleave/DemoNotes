@@ -93,7 +93,7 @@ async def create_and_set_tokens(username: str,
 
 def delete_all_refresh_tokens(user: str):
     namespace = "r_token:"
-    namespase_all_r_tokens_of_user = "rt_user"
+    namespase_all_r_tokens_of_user = "rt_user:"
     tokens = redis_db.hvals(namespase_all_r_tokens_of_user + user)
     for token in tokens:
         redis_db.delete(namespace + token)
@@ -103,7 +103,7 @@ def delete_all_refresh_tokens(user: str):
 def invalidate_tokens(username: str, refresh_token: str,
                       response: Response, settings: Settings):
     namespace = "r_token:"
-    namespase_all_r_tokens_of_user = "rt_user"
+    namespase_all_r_tokens_of_user = "rt_user:"
     redis_db.delete(namespace + refresh_token)
     redis_db.hdel(namespase_all_r_tokens_of_user + username, refresh_token)
     response.delete_cookie(key="access_token", domain=settings.domain)

@@ -16,7 +16,7 @@ import json
 def test_token_exists(migrated_postgres, redisdb, url):
     username = "qwerty"
     settings = get_settings()
-    namespase_all_r_tokens_of_user = "rt_user"
+    namespase_all_r_tokens_of_user = "rt_user:"
     access_token = create_jwt_token(
         data={
             "sub": username,
@@ -47,8 +47,7 @@ def test_token_exists(migrated_postgres, redisdb, url):
         cookies = {"access_token": access_token}
         response = client.post("/revoke_all", cookies=cookies)
         assert response.status_code == 200
-        assert response.json() == {"operation": "revoke_all", "successful": True}
+        assert response.json() == {"operation": "revoke_all",
+                                   "successful": True}
     assert redisdb.exists(namespase_all_r_tokens_of_user + username) == False
-    # print(str_r_token)
-    # print(redisdb.get(namespase + str_r_token))
     assert redisdb.exists(namespase + str_r_token) == False
